@@ -16,6 +16,7 @@
 
 package com.ringdroid;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -26,11 +27,13 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -52,6 +55,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.StringWriter;
+import java.util.ArrayList;
 
 /**
  * The activity for the Ringdroid main editor window.  Keeps track of
@@ -285,13 +289,52 @@ public class RingdroidEditActivity extends Activity
         if (!mFilename.equals("record")) {
             loadFromFile();
         } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                ArrayList<String> reqPermission = new ArrayList<>();
+                if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    reqPermission.add(Manifest.permission.RECORD_AUDIO);
+                }
+
+                if (reqPermission.size() > 0) {
+                    String[] aa = new String[reqPermission.size()];
+                    for (int i = 0; i < reqPermission.size(); i++) {
+                        aa[i] = reqPermission.get(i);
+                    }
+                    requestPermissions(aa, 345);
+                    return;
+                }
+            }
+
             recordAudio();
         }
     }
 
-    //
-    // WaveformListener
-    //
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        for (int i = 0; i < permissions.length; i++) {
+            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                new AlertDialog.Builder(this)
+                        .setMessage("There's no access. Go set it up.")
+                        .setNegativeButton("Go set up", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                startActivity(new Intent(Settings.ACTION_SETTINGS));
+                                finish();
+                            }
+                        })
+                        .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                finish();
+                            }
+                        }).show();
+                return;
+            }
+        }
+
+        recordAudio();
+    }
 
     private void closeThread(Thread thread) {
         if (thread != null && thread.isAlive()) {

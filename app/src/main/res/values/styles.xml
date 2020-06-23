@@ -18,6 +18,8 @@
 
 <resources>
 
+    <style name="BaseTheme" parent="@android:style/Theme.Holo" />
+
     <style name="AudioFileInfoOverlayText">
         <item name="android:paddingLeft">4px</item>
         <item name="android:paddingBottom">4px</item>

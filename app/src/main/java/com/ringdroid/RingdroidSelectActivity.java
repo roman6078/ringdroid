@@ -16,6 +16,7 @@
 
 package com.ringdroid;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.LoaderManager;
@@ -23,13 +24,16 @@ import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.MergeCursor;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -99,9 +103,6 @@ public class RingdroidSelectActivity
     private Cursor mInternalCursor;
     private Cursor mExternalCursor;
 
-    public RingdroidSelectActivity() {
-    }
-
     /**
      * Called when the activity is first created.
      */
@@ -111,6 +112,53 @@ public class RingdroidSelectActivity
 
         mShowAll = false;
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            ArrayList<String> reqPermission = new ArrayList<>();
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                reqPermission.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            }
+
+            if (reqPermission.size() > 0) {
+                String[] aa = new String[reqPermission.size()];
+                for (int i = 0; i < reqPermission.size(); i++) {
+                    aa[i] = reqPermission.get(i);
+                }
+                requestPermissions(aa, 345);
+                return;
+            }
+        }
+
+        toDeal();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        for (int i = 0; i < permissions.length; i++) {
+            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                new AlertDialog.Builder(this)
+                        .setMessage("There's no access. Go set it up.")
+                        .setNegativeButton("Go set up", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                startActivity(new Intent(Settings.ACTION_SETTINGS));
+                                finish();
+                            }
+                        })
+                        .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                finish();
+                            }
+                        }).show();
+                return;
+            }
+        }
+
+        toDeal();
+    }
+
+    private void toDeal() {
         String status = Environment.getExternalStorageState();
         if (status.equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
             showFinalAlert(getResources().getText(R.string.sdcard_readonly));
