@@ -39,6 +39,7 @@ public class MarkerView extends ImageView {
     private int mVelocity;
 
     private MarkerListener mListener;
+
     public MarkerView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -93,7 +94,7 @@ public class MarkerView extends ImageView {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         mVelocity++;
-        int v = (int) Math.sqrt(1 + mVelocity / 2);
+        int v = (int) Math.sqrt(1 + mVelocity / 2.0);
         if (mListener != null) {
             if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 mListener.markerLeft(this, v);
