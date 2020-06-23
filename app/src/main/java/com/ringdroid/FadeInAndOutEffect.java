@@ -19,16 +19,15 @@ public class FadeInAndOutEffect extends AudioEffect {
         mDecodedBytes.order(ByteOrder.LITTLE_ENDIAN);
         int mPlaySampleStart = (int) (playStartMsec * (mEffectManager.mSoundFile.getSampleRate())) * mEffectManager.mSoundFile.getChannels();
         int mPlaySampleEnd = (int) (playEndMsec * (mEffectManager.mSoundFile.getSampleRate())) * mEffectManager.mSoundFile.getChannels();
-        int position = mPlaySampleStart;
         int size = mPlaySampleEnd - mPlaySampleStart;
-        double rate = 1.0f;
+        double rate;
         int limitLen = (int) (size * 0.2);
         ShortBuffer mDecodedSamples = byteBuffer.asShortBuffer();
-        for (int i = position; i < size; i++) {
+        for (int i = mPlaySampleStart; i < size; i++) {
             rate = 1f;
-            if ((i - position) <= limitLen) {
+            if ((i - mPlaySampleStart) <= limitLen) {
                 //淡入
-                rate = (double) (i - position) / limitLen;
+                rate = (double) (i - mPlaySampleStart) / limitLen;
             }
 
             if ((size - i - 1) <= limitLen) {

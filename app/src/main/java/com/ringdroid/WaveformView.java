@@ -47,7 +47,6 @@ public class WaveformView extends View {
     // Colors
     private Paint mGridPaint;
 
-    ;
     private Paint mSelectedLinePaint;
     private Paint mUnselectedLinePaint;
     private Paint mUnselectedBkgndLinePaint;
@@ -73,6 +72,7 @@ public class WaveformView extends View {
     private GestureDetector mGestureDetector;
     private ScaleGestureDetector mScaleGestureDetector;
     private boolean mInitialized;
+
     public WaveformView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -475,7 +475,7 @@ public class WaveformView extends View {
 
         // Build histogram of 256 bins and figure out the new scaled max
         maxGain = 0;
-        int gainHist[] = new int[256];
+        int[] gainHist = new int[256];
         for (int i = 0; i < numFrames; i++) {
             int smoothedGain = (int) (smoothedGains[i] * scaleFactor);
             if (smoothedGain < 0)
@@ -538,9 +538,7 @@ public class WaveformView extends View {
         mLenByZoomLevel[1] = numFrames;
         mValuesByZoomLevel[1] = new double[mLenByZoomLevel[1]];
         mZoomFactorByZoomLevel[1] = 1.0;
-        for (int i = 0; i < mLenByZoomLevel[1]; i++) {
-            mValuesByZoomLevel[1][i] = heights[i];
-        }
+        System.arraycopy(heights, 0, mValuesByZoomLevel[1], 0, mLenByZoomLevel[1]);
 
         // 3 more levels are each halved
         for (int j = 2; j < 5; j++) {
@@ -581,18 +579,18 @@ public class WaveformView extends View {
     }
 
     public interface WaveformListener {
-        public void waveformTouchStart(float x);
+        void waveformTouchStart(float x);
 
-        public void waveformTouchMove(float x);
+        void waveformTouchMove(float x);
 
-        public void waveformTouchEnd();
+        void waveformTouchEnd();
 
-        public void waveformFling(float x);
+        void waveformFling(float x);
 
-        public void waveformDraw();
+        void waveformDraw();
 
-        public void waveformZoomIn();
+        void waveformZoomIn();
 
-        public void waveformZoomOut();
+        void waveformZoomOut();
     }
 }

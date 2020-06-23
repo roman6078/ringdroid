@@ -21,7 +21,6 @@ import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
@@ -41,8 +40,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
@@ -52,7 +49,6 @@ import com.ringdroid.soundfile.SoundFile;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Main screen that shows up when you launch Ringdroid. Handles selecting
@@ -138,19 +134,11 @@ public class RingdroidSelectActivity
             if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                 new AlertDialog.Builder(this)
                         .setMessage("There's no access. Go set it up.")
-                        .setNegativeButton("Go set up", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                startActivity(new Intent(Settings.ACTION_SETTINGS));
-                                finish();
-                            }
+                        .setNegativeButton("Go set up", (dialogInterface, i1) -> {
+                            startActivity(new Intent(Settings.ACTION_SETTINGS));
+                            finish();
                         })
-                        .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                finish();
-                            }
-                        }).show();
+                        .setNeutralButton("Cancel", (dialogInterface, i12) -> finish()).show();
                 return;
             }
         }
@@ -207,14 +195,7 @@ public class RingdroidSelectActivity
             getListView().setItemsCanFocus(true);
 
             // Normal click - open the editor
-            getListView().setOnItemClickListener(new OnItemClickListener() {
-                public void onItemClick(AdapterView<?> parent,
-                                        View view,
-                                        int position,
-                                        long id) {
-                    startRingdroidEditor();
-                }
-            });
+            getListView().setOnItemClickListener((parent, view, position, id) -> startRingdroidEditor());
 
             mInternalCursor = null;
             mExternalCursor = null;
@@ -233,24 +214,18 @@ public class RingdroidSelectActivity
             // TODO error 2
         }
 
-        mAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                if (view.getId() == R.id.row_options_button) {
-                    // Get the arrow ImageView and set the onClickListener to open the context menu.
-                    ImageView iv = (ImageView) view;
-                    iv.setOnClickListener(new View.OnClickListener() {
-                        public void onClick(View v) {
-                            openContextMenu(v);
-                        }
-                    });
-                    return true;
-                } else if (view.getId() == R.id.row_icon) {
-                    setSoundIconFromCursor((ImageView) view, cursor);
-                    return true;
-                }
-
-                return false;
+        mAdapter.setViewBinder((view, cursor, columnIndex) -> {
+            if (view.getId() == R.id.row_options_button) {
+                // Get the arrow ImageView and set the onClickListener to open the context menu.
+                ImageView iv = (ImageView) view;
+                iv.setOnClickListener(this::openContextMenu);
+                return true;
+            } else if (view.getId() == R.id.row_icon) {
+                setSoundIconFromCursor((ImageView) view, cursor);
+                return true;
             }
+
+            return false;
         });
 
         // Long-press opens a context menu
@@ -394,7 +369,7 @@ public class RingdroidSelectActivity
                 setAsDefaultRingtoneOrNotification();
                 return true;
             case CMD_SET_AS_CONTACT:
-                return chooseContactForRingtone(item);
+                return chooseContactForRingtone();
             default:
                 return super.onContextItemSelected(item);
         }
@@ -435,7 +410,7 @@ public class RingdroidSelectActivity
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.toString()
         };
 
-        for (String columnName : Arrays.asList(columnNames)) {
+        for (String columnName : columnNames) {
             uriIndex = c.getColumnIndex(columnName);
             if (uriIndex >= 0) {
                 return uriIndex;
@@ -461,7 +436,7 @@ public class RingdroidSelectActivity
         return (Uri.parse(itemUri));
     }
 
-    private boolean chooseContactForRingtone(MenuItem item) {
+    private boolean chooseContactForRingtone() {
         try {
             //Go to the choose contact activity
             Intent intent = new Intent(Intent.ACTION_EDIT, getUri());
@@ -485,7 +460,7 @@ public class RingdroidSelectActivity
                 getResources().getText(R.string.artist_name);
 
         CharSequence message;
-        if (artist.equals(ringdroidArtist)) {
+        if (artist.contentEquals(ringdroidArtist)) {
             message = getResources().getText(
                     R.string.confirm_delete_ringdroid);
         } else {
@@ -515,18 +490,10 @@ public class RingdroidSelectActivity
                 .setMessage(message)
                 .setPositiveButton(
                         R.string.delete_ok_button,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog,
-                                                int whichButton) {
-                                onDelete();
-                            }
-                        })
+                        (dialog, whichButton) -> onDelete())
                 .setNegativeButton(
                         R.string.delete_cancel_button,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog,
-                                                int whichButton) {
-                            }
+                        (dialog, whichButton) -> {
                         })
                 .setCancelable(true)
                 .show();
@@ -558,12 +525,7 @@ public class RingdroidSelectActivity
                 .setMessage(message)
                 .setPositiveButton(
                         R.string.alert_ok_button,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog,
-                                                int whichButton) {
-                                finish();
-                            }
-                        })
+                        (dialog, whichButton) -> finish())
                 .setCancelable(false)
                 .show();
     }
@@ -605,8 +567,8 @@ public class RingdroidSelectActivity
     /* Implementation of LoaderCallbacks.onCreateLoader */
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        ArrayList<String> selectionArgsList = new ArrayList<String>();
-        String selection;
+        ArrayList<String> selectionArgsList = new ArrayList<>();
+        StringBuilder selection;
         Uri baseUri;
         String[] projection;
 
@@ -624,41 +586,40 @@ public class RingdroidSelectActivity
         }
 
         if (mShowAll) {
-            selection = "(_DATA LIKE ?)";
+            selection = new StringBuilder("(_DATA LIKE ?)");
             selectionArgsList.add("%");
         } else {
-            selection = "(";
+            selection = new StringBuilder("(");
             for (String extension : SoundFile.getSupportedExtensions()) {
                 selectionArgsList.add("%." + extension);
                 if (selection.length() > 1) {
-                    selection += " OR ";
+                    selection.append(" OR ");
                 }
-                selection += "(_DATA LIKE ?)";
+                selection.append("(_DATA LIKE ?)");
             }
-            selection += ")";
+            selection.append(")");
 
-            selection = "(" + selection + ") AND (_DATA NOT LIKE ?)";
+            selection = new StringBuilder("(" + selection + ") AND (_DATA NOT LIKE ?)");
             selectionArgsList.add("%espeak-data/scratch%");
         }
 
         String filter = args != null ? args.getString("filter") : null;
         if (filter != null && filter.length() > 0) {
             filter = "%" + filter + "%";
-            selection =
-                    "(" + selection + " AND " +
-                            "((TITLE LIKE ?) OR (ARTIST LIKE ?) OR (ALBUM LIKE ?)))";
+            selection = new StringBuilder("(" + selection + " AND " +
+                    "((TITLE LIKE ?) OR (ARTIST LIKE ?) OR (ALBUM LIKE ?)))");
             selectionArgsList.add(filter);
             selectionArgsList.add(filter);
             selectionArgsList.add(filter);
         }
 
         String[] selectionArgs =
-                selectionArgsList.toArray(new String[selectionArgsList.size()]);
+                selectionArgsList.toArray(new String[0]);
         return new CursorLoader(
                 this,
                 baseUri,
                 projection,
-                selection,
+                selection.toString(),
                 selectionArgs,
                 MediaStore.Audio.Media.DEFAULT_SORT_ORDER
         );

@@ -22,16 +22,12 @@ import android.media.AudioTrack;
 
 import com.ringdroid.soundfile.SoundFile;
 
-import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
 class SamplePlayer {
-    private SoundFile mSoundFile;
-    private int mPlaybackEnd;
     private int mPlayStartMsec;
     private int mPlayEndMsec;
 
-    ;
     private int mSampleRate;
     private int mChannels;
     private int mNumSamples;  // Number of samples per channel.
@@ -42,7 +38,7 @@ class SamplePlayer {
     private boolean mKeepPlaying;
     private OnCompletionListener mListener;
 
-    public SamplePlayer(ByteBuffer decodedBytes, int sampleRate, int channels, int numSamples) {
+    public SamplePlayer(int sampleRate, int channels, int numSamples) {
         mSampleRate = sampleRate;
         mChannels = channels;
         mNumSamples = numSamples;
@@ -86,8 +82,7 @@ class SamplePlayer {
     }
 
     public SamplePlayer(SoundFile sf) {
-        this(sf.getDecodedBytes(), sf.getSampleRate(), sf.getChannels(), sf.getNumSamples());
-        mSoundFile = sf;
+        this(sf.getSampleRate(), sf.getChannels(), sf.getNumSamples());
     }
 
     public void setOnCompletionListener(OnCompletionListener listener) {
@@ -149,7 +144,7 @@ class SamplePlayer {
             if (mPlayThread != null) {
                 try {
                     mPlayThread.join();
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignored) {
                 }
                 mPlayThread = null;
             }
@@ -168,7 +163,7 @@ class SamplePlayer {
         mPlayStartMsec = playStartMsec;
         mPlayEndMsec = playEndMsec;
         mPlaybackStart = (int) (playStartMsec * (mSampleRate / 1000.0));
-        mPlaybackEnd = (int) (playEndMsec * (mSampleRate / 1000.0));
+        int mPlaybackEnd = (int) (playEndMsec * (mSampleRate / 1000.0));
         if (mPlaybackStart > mNumSamples) {
             mPlaybackStart = mNumSamples;  // Nothing to play...
         }
@@ -187,6 +182,6 @@ class SamplePlayer {
     }
 
     public interface OnCompletionListener {
-        public void onCompletion();
+        void onCompletion();
     }
 }

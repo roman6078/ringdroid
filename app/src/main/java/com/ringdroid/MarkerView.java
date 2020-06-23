@@ -38,7 +38,6 @@ public class MarkerView extends ImageView {
 
     private int mVelocity;
 
-    ;
     private MarkerListener mListener;
     public MarkerView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -120,22 +119,22 @@ public class MarkerView extends ImageView {
     }
 
     public interface MarkerListener {
-        public void markerTouchStart(MarkerView marker, float pos);
+        void markerTouchStart(MarkerView marker, float pos);
 
-        public void markerTouchMove(MarkerView marker, float pos);
+        void markerTouchMove(MarkerView marker, float pos);
 
-        public void markerTouchEnd(MarkerView marker);
+        void markerTouchEnd(MarkerView marker);
 
-        public void markerFocus(MarkerView marker);
+        void markerFocus(MarkerView marker);
 
-        public void markerLeft(MarkerView marker, int velocity);
+        void markerLeft(MarkerView marker, int velocity);
 
-        public void markerRight(MarkerView marker, int velocity);
+        void markerRight(MarkerView marker, int velocity);
 
-        public void markerEnter(MarkerView marker);
+        void markerEnter(MarkerView marker);
 
-        public void markerKeyUp();
+        void markerKeyUp();
 
-        public void markerDraw();
+        void markerDraw();
     }
 }

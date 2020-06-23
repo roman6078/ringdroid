@@ -30,8 +30,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -84,45 +82,34 @@ public class ChooseContactActivity
                             R.id.row_display_name},
                     0);
 
-            mAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-                public boolean setViewValue(View view,
-                                            Cursor cursor,
-                                            int columnIndex) {
-                    String name = cursor.getColumnName(columnIndex);
-                    String value = cursor.getString(columnIndex);
-                    if (name.equals(Contacts.CUSTOM_RINGTONE)) {
-                        if (value != null && value.length() > 0) {
-                            view.setVisibility(View.VISIBLE);
-                        } else {
-                            view.setVisibility(View.INVISIBLE);
-                        }
-                        return true;
+            mAdapter.setViewBinder((view, cursor, columnIndex) -> {
+                String name = cursor.getColumnName(columnIndex);
+                String value = cursor.getString(columnIndex);
+                if (name.equals(Contacts.CUSTOM_RINGTONE)) {
+                    if (value != null && value.length() > 0) {
+                        view.setVisibility(View.VISIBLE);
+                    } else {
+                        view.setVisibility(View.INVISIBLE);
                     }
-                    if (name.equals(Contacts.STARRED)) {
-                        if (value != null && value.equals("1")) {
-                            view.setVisibility(View.VISIBLE);
-                        } else {
-                            view.setVisibility(View.INVISIBLE);
-                        }
-                        return true;
-                    }
-
-                    return false;
+                    return true;
                 }
+                if (name.equals(Contacts.STARRED)) {
+                    if (value != null && value.equals("1")) {
+                        view.setVisibility(View.VISIBLE);
+                    } else {
+                        view.setVisibility(View.INVISIBLE);
+                    }
+                    return true;
+                }
+
+                return false;
             });
 
             setListAdapter(mAdapter);
 
             // On click, assign ringtone to contact
             getListView().setOnItemClickListener(
-                    new OnItemClickListener() {
-                        public void onItemClick(AdapterView<?> parent,
-                                                View view,
-                                                int position,
-                                                long id) {
-                            assignRingtoneToContact();
-                        }
-                    }
+                    (parent, view, position, id) -> assignRingtoneToContact()
             );
 
             getLoaderManager().initLoader(0, null, this);
@@ -160,7 +147,6 @@ public class ChooseContactActivity
         Toast.makeText(this, message, Toast.LENGTH_SHORT)
                 .show();
         finish();
-        return;
     }
 
     /* Implementation of TextWatcher.beforeTextChanged */

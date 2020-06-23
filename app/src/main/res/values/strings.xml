@@ -50,8 +50,8 @@
 
     <!-- After you save a notification or ringtone and have more options
          for what to do with them -->
-    <string name="what_to_do_with_ringtone">Saved!  Make this your default ringtone or assign it to a contact?</string>
-    <string name="set_default_notification">Saved!  Make this your default notification?</string>
+    <string name="what_to_do_with_ringtone">Saved! Make this your default ringtone or assign it to a contact?</string>
+    <string name="set_default_notification">Saved! Make this your default notification?</string>
 
     <string name="make_default_ringtone_button">Make Default</string>
     <string name="choose_contact_ringtone_button">Assign to Contact</string>
@@ -125,7 +125,7 @@
     <string name="delete_audio">Delete Audio</string>
 
     <string name="confirm_delete_ringdroid">Are you sure?</string>
-    <string name="confirm_delete_non_ringdroid">Are you sure?  This file was not created using Ringdroid!</string>
+    <string name="confirm_delete_non_ringdroid">Are you sure? This file was not created using Ringdroid!</string>
 
     <string name="delete_ok_button">Delete</string>
     <string name="delete_cancel_button">Cancel</string>
@@ -169,6 +169,18 @@
      -->
 
     <string name="about_title">About Ringdroid</string>
-    <string name="about_text"><![CDATA[Use Ringdroid to edit MP3, OGG, WAV, AAC, and AMR audio files and create ringtones, alarms, and notifications from them.\n\nTip: copy audio files to your SD card using a USB cable.\n\nTip: tap anywhere on the waveform to start playing at that position.\n\nTip: while playing, tap the word Start or End to quickly set the start and end markers to the current playback time.\n\nVersion %s\n\nDeveloper: Dominic Mazzoni, Nicolas Faralli\nGraphics: Joseph Wain\nSupport and evangelizing: Eugene Koh\nEnhancements: Dan Klufas\n\nRingdroid is free software, distributed under the Apache 2.0 license.  Source code is on github.com/google/ringdroid\n]]></string>
+    <string name="about_text">
+<![CDATA[Use Ringdroid to edit MP3, OGG, WAV, AAC, and AMR audio files and create ringtones, alarms, and notifications from them.
+    \n\nTip: Copy audio files to your SD card using a USB cable.
+    \n\nTip: Tap anywhere on the waveform to start playing at that position.
+    \n\nTip: While playing, tap Start or End to quickly set the start and end markers to the current playback time.
+    \n\nVersion %s
+    \n\nDeveloper: Dominic Mazzoni, Nicolas Faralli
+    \nGraphics: Joseph Wain\nSupport and evangelizing: Eugene Koh
+    \nEnhancements: Dan Klufas
+    \n\nRingdroid is free software, distributed under the Apache 2.0 license. Source code is on github.com/google/ringdroid.
+    \n
+]]>
+    </string>
 
 </resources>

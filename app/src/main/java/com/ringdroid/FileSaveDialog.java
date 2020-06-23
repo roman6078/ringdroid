@@ -45,19 +45,6 @@ public class FileSaveDialog extends Dialog {
     private String mOriginalName;
     private ArrayList<String> mTypeArray;
     private int mPreviousSelection;
-    private View.OnClickListener saveListener = new View.OnClickListener() {
-        public void onClick(View view) {
-            mResponse.obj = mFilename.getText();
-            mResponse.arg1 = mTypeSpinner.getSelectedItemPosition();
-            mResponse.sendToTarget();
-            dismiss();
-        }
-    };
-    private View.OnClickListener cancelListener = new View.OnClickListener() {
-        public void onClick(View view) {
-            dismiss();
-        }
-    };
 
     public FileSaveDialog(Context context,
                           Resources resources,
@@ -70,7 +57,7 @@ public class FileSaveDialog extends Dialog {
 
         setTitle(resources.getString(R.string.file_save_title));
 
-        mTypeArray = new ArrayList<String>();
+        mTypeArray = new ArrayList<>();
         mTypeArray.add(resources.getString(R.string.type_music));
         mTypeArray.add(resources.getString(R.string.type_alarm));
         mTypeArray.add(resources.getString(R.string.type_notification));
@@ -79,7 +66,7 @@ public class FileSaveDialog extends Dialog {
         mFilename = (EditText) findViewById(R.id.filename);
         mOriginalName = originalName;
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 context, android.R.layout.simple_spinner_item, mTypeArray);
         adapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
@@ -103,8 +90,15 @@ public class FileSaveDialog extends Dialog {
         });
 
         Button save = (Button) findViewById(R.id.save);
+        View.OnClickListener saveListener = view -> {
+            mResponse.obj = mFilename.getText();
+            mResponse.arg1 = mTypeSpinner.getSelectedItemPosition();
+            mResponse.sendToTarget();
+            dismiss();
+        };
         save.setOnClickListener(saveListener);
         Button cancel = (Button) findViewById(R.id.cancel);
+        View.OnClickListener cancelListener = view -> dismiss();
         cancel.setOnClickListener(cancelListener);
         mResponse = response;
     }

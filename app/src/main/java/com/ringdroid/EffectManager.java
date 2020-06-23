@@ -33,10 +33,9 @@ public class EffectManager {
         addEffects(new FadeInAndOutEffect(this));
     }
 
-    public EffectManager addEffects(AudioEffect effect) {
+    public void addEffects(AudioEffect effect) {
         mEffects.clear();
         mEffects.add(effect);
-        return this;
     }
 
     public void handle(float playStartTime, float playEndTime) {

@@ -25,9 +25,9 @@ import java.util.HashMap;
 
 public class SongMetadataReader {
     public Uri GENRES_URI = MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI;
-    public Activity mActivity = null;
-    public String mFilename = "";
-    public String mTitle = "";
+    public Activity mActivity;
+    public String mFilename;
+    public String mTitle;
     public String mArtist = "";
     public String mAlbum = "";
     public String mGenre = "";
@@ -39,13 +39,13 @@ public class SongMetadataReader {
         mTitle = getBasename(filename);
         try {
             ReadMetadata();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 
     private void ReadMetadata() {
         // Get a map from genre ids to names
-        HashMap<String, String> genreIdMap = new HashMap<String, String>();
+        HashMap<String, String> genreIdMap = new HashMap<>();
         Cursor c = mActivity.getContentResolver().query(
                 GENRES_URI,
                 new String[]{
@@ -68,7 +68,6 @@ public class SongMetadataReader {
                 break;
             }
             c.close();
-            c = null;
         }
 
         Uri uri = MediaStore.Audio.Media.getContentUriForPath(mFilename);
@@ -104,13 +103,11 @@ public class SongMetadataReader {
     private Uri makeGenreUri(String genreId) {
         String CONTENTDIR = MediaStore.Audio.Genres.Members.CONTENT_DIRECTORY;
         return Uri.parse(
-                new StringBuilder()
-                        .append(GENRES_URI.toString())
-                        .append("/")
-                        .append(genreId)
-                        .append("/")
-                        .append(CONTENTDIR)
-                        .toString());
+                GENRES_URI.toString() +
+                        "/" +
+                        genreId +
+                        "/" +
+                        CONTENTDIR);
     }
 
     private String getStringFromColumn(Cursor c, String columnName) {
@@ -125,12 +122,7 @@ public class SongMetadataReader {
 
     private int getIntegerFromColumn(Cursor c, String columnName) {
         int index = c.getColumnIndexOrThrow(columnName);
-        Integer value = c.getInt(index);
-        if (value != null) {
-            return value;
-        } else {
-            return -1;
-        }
+        return c.getInt(index);
     }
 
     private String getBasename(String filename) {

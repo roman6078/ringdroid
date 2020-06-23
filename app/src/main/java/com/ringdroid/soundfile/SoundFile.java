@@ -75,8 +75,8 @@ public class SoundFile {
 
     public static boolean isFilenameSupported(String filename) {
         String[] extensions = getSupportedExtensions();
-        for (int i = 0; i < extensions.length; i++) {
-            if (filename.endsWith("." + extensions[i])) {
+        for (String extension : extensions) {
+            if (filename.endsWith("." + extension)) {
                 return true;
             }
         }
@@ -86,7 +86,7 @@ public class SoundFile {
     // Create and return a SoundFile object using the file fileName.
     public static SoundFile create(String fileName,
                                    ProgressListener progressListener)
-            throws java.io.FileNotFoundException,
+            throws
             java.io.IOException, InvalidInputException {
         // First check that the file exists and that its extension is supported.
         File f = new File(fileName);
@@ -178,7 +178,7 @@ public class SoundFile {
     }
 
     private void ReadFile(File inputFile)
-            throws java.io.FileNotFoundException,
+            throws
             java.io.IOException, InvalidInputException {
         MediaExtractor extractor = new MediaExtractor();
         MediaFormat format = null;
@@ -226,7 +226,7 @@ public class SoundFile {
         // estimate of the total size needed to store all the samples in order to resize the buffer
         // only once.
         mDecodedBytes = ByteBuffer.allocate(1 << 20);
-        Boolean firstSampleData = true;
+        boolean firstSampleData = true;
         while (true) {
             // read data from file and feed it to the decoder input buffers.
             int inputBufferIndex = codec.dequeueInputBuffer(100);
@@ -258,10 +258,8 @@ public class SoundFile {
                             // We are asked to stop reading the file. Returning immediately. The
                             // SoundFile object is invalid and should NOT be used afterward!
                             extractor.release();
-                            extractor = null;
                             codec.stop();
                             codec.release();
-                            codec = null;
                             return;
                         }
                     }
@@ -341,10 +339,8 @@ public class SoundFile {
         mAvgBitRate = (int) ((mFileSize * 8) * ((float) mSampleRate / mNumSamples) / 1000);
 
         extractor.release();
-        extractor = null;
         codec.stop();
         codec.release();
-        codec = null;
 
         // Temporary hack to make it work with the old version.
         mNumFrames = mNumSamples / getSamplesPerFrame();
@@ -417,7 +413,7 @@ public class SoundFile {
             if (mDecodedSamples.remaining() < 1024) {
                 // Try to allocate memory for 10 additional seconds.
                 int newCapacity = mDecodedBytes.capacity() + 10 * mSampleRate * 2;
-                ByteBuffer newDecodedBytes = null;
+                ByteBuffer newDecodedBytes;
                 try {
                     newDecodedBytes = ByteBuffer.allocate(newCapacity);
                 } catch (OutOfMemoryError oome) {
@@ -508,10 +504,10 @@ public class SoundFile {
         ByteBuffer[] outputBuffers = codec.getOutputBuffers();
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
         boolean done_reading = false;
-        long presentation_time = 0;
+        long presentation_time;
 
         int frame_size = 1024;  // number of samples per frame per channel for an mp4 (AAC) stream.
-        byte buffer[] = new byte[frame_size * numChannels * 2];  // a sample is coded with a short.
+        byte[] buffer = new byte[frame_size * numChannels * 2];  // a sample is coded with a short.
         EffectManager.getInstance().getDecodedBytes().position(startOffset);
         numSamples += (2 * frame_size);  // Adding 2 frames, Cf. priming frames for AAC.
         int tot_num_frames = 1 + (numSamples / frame_size);  // first AAC frame = 2 bytes
@@ -604,7 +600,6 @@ public class SoundFile {
         encodedBytes.rewind();
         codec.stop();
         codec.release();
-        codec = null;
 
         // Write the encoded stream to the file, 4kB at a time.
         buffer = new byte[4096];
@@ -633,8 +628,8 @@ public class SoundFile {
     // The size of a sample is assumed to be 16 bits (for a single channel).
     // When done, buffer will contain {sample 1 left, sample 1 right, sample 2 left, etc.}
     private void swapLeftRightChannels(byte[] buffer) {
-        byte left[] = new byte[2];
-        byte right[] = new byte[2];
+        byte[] left = new byte[2];
+        byte[] right = new byte[2];
         if (buffer.length % 4 != 0) {  // 2 channels, 2 bytes per sample (for one channel).
             // Invalid buffer size.
             return;
@@ -669,7 +664,7 @@ public class SoundFile {
         outputStream.write(WAVHeader.getWAVHeader(mSampleRate, mChannels, numSamples));
 
         // Write the samples to the file, 1024 at a time.
-        byte buffer[] = new byte[1024 * mChannels * 2];  // Each sample is coded with a short.
+        byte[] buffer = new byte[1024 * mChannels * 2];  // Each sample is coded with a short.
         mDecodedBytes.position(startOffset);
         int numBytesLeft = numSamples * mChannels * 2;
         while (numBytesLeft >= buffer.length) {
@@ -731,19 +726,19 @@ public class SoundFile {
 
         // Start dumping the samples.
         BufferedWriter writer = null;
-        float presentationTime = 0;
+        float presentationTime;
         mDecodedSamples.rewind();
-        String row;
+        StringBuilder row;
         try {
             writer = new BufferedWriter(new FileWriter(outFile));
             for (int sampleIndex = 0; sampleIndex < mNumSamples; sampleIndex++) {
                 presentationTime = (float) (sampleIndex) / mSampleRate;
-                row = Float.toString(presentationTime);
+                row = new StringBuilder(Float.toString(presentationTime));
                 for (int channelIndex = 0; channelIndex < mChannels; channelIndex++) {
-                    row += "\t" + mDecodedSamples.get();
+                    row.append("\t").append(mDecodedSamples.get());
                 }
-                row += "\n";
-                writer.write(row);
+                row.append("\n");
+                writer.write(row.toString());
             }
         } catch (IOException e) {
             Log.w("Ringdroid", "Failed to create the sample TSV file.");
@@ -786,7 +781,7 @@ public class SoundFile {
     }
 
     // Custom exception for invalid inputs.
-    public class InvalidInputException extends Exception {
+    public static class InvalidInputException extends Exception {
         // Serial version ID generated by Eclipse.
         private static final long serialVersionUID = -2505698991597837165L;
 
