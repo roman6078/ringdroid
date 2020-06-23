@@ -26,6 +26,8 @@ import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 
+import com.ringdroid.EffectManager;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -377,6 +379,7 @@ public class SoundFile {
         }
         mDecodedSamples.rewind();
         // DumpSamples();  // Uncomment this line to dump the samples in a TSV file.
+        EffectManager.getInstance().setSoundFile(this);
     }
 
     private void RecordAudio() {
@@ -489,6 +492,7 @@ public class SoundFile {
         // Some devices have problems reading mono AAC files (e.g. Samsung S3). Making it stereo.
         int numChannels = (mChannels == 1) ? 2 : mChannels;
 
+        EffectManager.getInstance().handle(startTime, endTime);
         String mimeType = "audio/mp4a-latm";
         int bitrate = 64000 * numChannels;  // rule of thumb for a good quality: 64kbps per channel.
         MediaCodec codec = MediaCodec.createEncoderByType(mimeType);
@@ -508,7 +512,7 @@ public class SoundFile {
 
         int frame_size = 1024;  // number of samples per frame per channel for an mp4 (AAC) stream.
         byte buffer[] = new byte[frame_size * numChannels * 2];  // a sample is coded with a short.
-        mDecodedBytes.position(startOffset);
+        EffectManager.getInstance().getDecodedBytes().position(startOffset);
         numSamples += (2 * frame_size);  // Adding 2 frames, Cf. priming frames for AAC.
         int tot_num_frames = 1 + (numSamples / frame_size);  // first AAC frame = 2 bytes
         if (numSamples % frame_size != 0) {
@@ -537,13 +541,13 @@ public class SoundFile {
                     }
                     // bufferSize is a hack to create a stereo file from a mono stream.
                     int bufferSize = (mChannels == 1) ? (buffer.length / 2) : buffer.length;
-                    if (mDecodedBytes.remaining() < bufferSize) {
-                        for (int i = mDecodedBytes.remaining(); i < bufferSize; i++) {
+                    if (EffectManager.getInstance().getDecodedBytes().remaining() < bufferSize) {
+                        for (int i = EffectManager.getInstance().getDecodedBytes().remaining(); i < bufferSize; i++) {
                             buffer[i] = 0;  // pad with extra 0s to make a full frame.
                         }
-                        mDecodedBytes.get(buffer, 0, mDecodedBytes.remaining());
+                        EffectManager.getInstance().getDecodedBytes().get(buffer, 0, EffectManager.getInstance().getDecodedBytes().remaining());
                     } else {
-                        mDecodedBytes.get(buffer, 0, bufferSize);
+                        EffectManager.getInstance().getDecodedBytes().get(buffer, 0, bufferSize);
                     }
                     if (mChannels == 1) {
                         for (int i = bufferSize - 1; i >= 1; i -= 2) {
@@ -765,6 +769,10 @@ public class SoundFile {
         StringWriter writer = new StringWriter();
         e.printStackTrace(new PrintWriter(writer));
         return writer.toString();
+    }
+
+    public ByteBuffer getDecodedBytes() {
+        return mDecodedBytes;
     }
 
     // Progress listener interface.

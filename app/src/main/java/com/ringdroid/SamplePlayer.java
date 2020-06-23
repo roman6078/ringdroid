@@ -22,10 +22,14 @@ import android.media.AudioTrack;
 
 import com.ringdroid.soundfile.SoundFile;
 
+import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
 class SamplePlayer {
-    private ShortBuffer mSamples;
+    private SoundFile mSoundFile;
+    private int mPlaybackEnd;
+    private int mPlayStartMsec;
+    private int mPlayEndMsec;
 
     ;
     private int mSampleRate;
@@ -37,8 +41,8 @@ class SamplePlayer {
     private Thread mPlayThread;
     private boolean mKeepPlaying;
     private OnCompletionListener mListener;
-    public SamplePlayer(ShortBuffer samples, int sampleRate, int channels, int numSamples) {
-        mSamples = samples;
+
+    public SamplePlayer(ByteBuffer decodedBytes, int sampleRate, int channels, int numSamples) {
         mSampleRate = sampleRate;
         mChannels = channels;
         mNumSamples = numSamples;
@@ -82,7 +86,8 @@ class SamplePlayer {
     }
 
     public SamplePlayer(SoundFile sf) {
-        this(sf.getSamples(), sf.getSampleRate(), sf.getChannels(), sf.getNumSamples());
+        this(sf.getDecodedBytes(), sf.getSampleRate(), sf.getChannels(), sf.getNumSamples());
+        mSoundFile = sf;
     }
 
     public void setOnCompletionListener(OnCompletionListener listener) {
@@ -108,18 +113,18 @@ class SamplePlayer {
         // (Assumes mChannels = 1 or 2).
         mPlayThread = new Thread() {
             public void run() {
-                int position = mPlaybackStart * mChannels;
-                mSamples.position(position);
+                EffectManager.getInstance().handle(mPlayStartMsec / 1000f, mPlayEndMsec / 1000f);
+                ShortBuffer shortBuffer = EffectManager.getInstance().getDecodedBytes().asShortBuffer();
                 int limit = mNumSamples * mChannels;
-                while (mSamples.position() < limit && mKeepPlaying) {
-                    int numSamplesLeft = limit - mSamples.position();
+                while (shortBuffer.position() < limit && mKeepPlaying) {
+                    int numSamplesLeft = limit - shortBuffer.position();
                     if (numSamplesLeft >= mBuffer.length) {
-                        mSamples.get(mBuffer);
+                        shortBuffer.get(mBuffer);
                     } else {
                         for (int i = numSamplesLeft; i < mBuffer.length; i++) {
                             mBuffer[i] = 0;
                         }
-                        mSamples.get(mBuffer, 0, numSamplesLeft);
+                        shortBuffer.get(mBuffer, 0, numSamplesLeft);
                     }
                     // TODO(nfaralli): use the write method that takes a ByteBuffer as argument.
                     mAudioTrack.write(mBuffer, 0, mBuffer.length);
@@ -157,12 +162,18 @@ class SamplePlayer {
         mAudioTrack.release();
     }
 
-    public void seekTo(int msec) {
+    public void seekTo(int playStartMsec, int playEndMsec) {
         boolean wasPlaying = isPlaying();
         stop();
-        mPlaybackStart = (int) (msec * (mSampleRate / 1000.0));
+        mPlayStartMsec = playStartMsec;
+        mPlayEndMsec = playEndMsec;
+        mPlaybackStart = (int) (playStartMsec * (mSampleRate / 1000.0));
+        mPlaybackEnd = (int) (playEndMsec * (mSampleRate / 1000.0));
         if (mPlaybackStart > mNumSamples) {
             mPlaybackStart = mNumSamples;  // Nothing to play...
+        }
+        if (mPlaybackEnd > mNumSamples) {
+            mPlaybackEnd = mNumSamples;
         }
         mAudioTrack.setNotificationMarkerPosition(mNumSamples - 1 - mPlaybackStart);
         if (wasPlaying) {
