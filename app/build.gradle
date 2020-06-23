@@ -11,8 +11,8 @@ android {
         // permissions at run time, as described here:
         // https://developer.android.com/training/permissions/index.html
         targetSdkVersion 28
-        versionCode 20704
-        versionName "2.7.4"
+        versionCode 20800
+        versionName "2.8.0"
     }
 
     buildTypes {
