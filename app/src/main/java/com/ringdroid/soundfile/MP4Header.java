@@ -237,13 +237,13 @@ public class MP4Header {
             durationMS++;
         }
         mNumSamples= new byte[] {
-                (byte)((numSamples >> 26) & 0XFF),
+                (byte)((numSamples >> 24) & 0XFF),
                 (byte)((numSamples >> 16) & 0XFF),
                 (byte)((numSamples >> 8) & 0XFF),
                 (byte)(numSamples & 0XFF)
         };
         mDurationMS = new byte[] {
-                (byte)((durationMS >> 26) & 0XFF),
+                (byte)((durationMS >> 24) & 0XFF),
                 (byte)((durationMS >> 16) & 0XFF),
                 (byte)((durationMS >> 8) & 0XFF),
                 (byte)(durationMS & 0XFF)
