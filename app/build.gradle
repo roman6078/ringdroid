@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.0"
+    buildToolsVersion "29.0.3"
 
     defaultConfig {
         applicationId "com.ringdroid"
@@ -10,7 +10,7 @@ android {
         // WARNING: if you increase targetSdkVersion you will need to take care of requesting
         // permissions at run time, as described here:
         // https://developer.android.com/training/permissions/index.html
-        targetSdkVersion 22
+        targetSdkVersion 22 //25
         versionCode 20704
         versionName "2.7.4"
     }
@@ -18,7 +18,13 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    compileOptions {
+        encoding = 'UTF-8'
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
